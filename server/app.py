@@ -86,5 +86,14 @@ def messages_by_id(id):
             "message": "Message deleted."
         }), 200) 
     
+with app.app_context():
+    # Create a test message
+    test_message = Message(body="Test", username="Tester")
+    db.session.add(test_message)
+    db.session.commit()
+
+    m = Message.query.first()
+    id = m.id
+
 if __name__ == '__main__':
     app.run(port=5555)
