@@ -92,6 +92,7 @@ with app.app_context():
     db.session.add(test_message)
     db.session.commit()
 
+
     m = Message.query.first()
     id = m.id
 
