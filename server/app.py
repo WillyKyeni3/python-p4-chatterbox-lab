@@ -14,13 +14,77 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 
-@app.route('/messages')
+@app.route('/messages', methods=['GET', 'POST'])
 def messages():
-    return ''
 
-@app.route('/messages/<int:id>')
+    if request.method == 'GET':
+        # messages = []
+        messages = [message.to_dict() for message in Message.query.all()]
+        # for message in Message.query.all():
+        #     message_dict=message.to_dict()
+        #     messages.append(message_dict)
+        
+        # response = make_response(
+        #     messages,
+        #     200
+        # )
+
+
+        return make_response(jsonify(messages), 200)
+
+    elif request.method == 'POST':
+        data = request.json
+        new_message = Message(
+            
+            body = data.get("body"),
+            username = data.get("username"),
+           
+        )
+
+        db.session.add(new_message)
+        db.session.commit()
+
+        # message_dict = new_message.to_dict()
+
+        # response = make_response(
+        #     message_dict,
+        #     201
+        # )
+
+        return make_response(jsonify(new_message.to_dict()), 201)
+
+
+@app.route('/messages/<int:id>', methods=['GET','PATCH', 'DELETE'])
 def messages_by_id(id):
-    return ''
+    message=Message.query.filter(Message.id == id).first()
 
+    if message is None:
+        return make_response(jsonify(message.to_dict()), 200)
+    
+
+    
+    if request.method == 'GET':
+            return make_response(jsonify(message.to_dict()), 200)
+    
+       
+    elif request.method == 'PATCH':
+        data = request.json
+
+        for attr in data:
+            setattr(message, attr, data.get(attr))
+
+        db.session.commit()
+        return make_response(jsonify(message.to_dict()), 200)
+
+            
+    elif request.method == 'DELETE':
+        db.session.delete(message)
+        db.session.commit()
+
+        return make_response(jsonify({
+            "delete_successful": True,
+            "message": "Message deleted."
+        }), 200) 
+    
 if __name__ == '__main__':
     app.run(port=5555)
